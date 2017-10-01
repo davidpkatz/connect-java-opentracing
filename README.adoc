@@ -1,0 +1,66 @@
+= Connect Logging and Open Tracing
+
+=== Context
+
+The CNCF Open Tracing API provides an "API" indicating how _tracing_ should occur in a standard stack. The
+API is literally a description of constructs and is then idiomatically mapped to every language that wishes 
+to support the concepts discussed in the specification.
+
+The core concepts are a trace id (across the entire request from origin until full completion - including database
+and messages dropped into a messaging system), a span (the part of a trace in a single service), tags (categorisation
+of spans) and baggage (extra data along for the ride). Spans typically have parent spans so the whole tree of calls
+can be tracked all the way down the line.
+
+Open Tracing can also store "logs" but this capability is somewhat anemic, so we currently don't use it.
+
+Each *implementation* of the Open Tracing API is up to you, and there are various possibilities - the
+CNCF's Jaeger or Open Zipkin are two of the more popular. 
+
+=== This artifact
+
+What this repository tries to do is tie together the _tracing_ with the _logging_. It is our belief that one
+without the other is largely useless. Knowing some part of your request is slow (or weird) is fine, but knowing
+what it was _actually doing_ while it was being weird (or slow) is gold. 
+
+Typically, logs are far more useful in diagnosing test failures - and with end-to-end tests being generally far
+more important in the CI/CD lifecycle, being able to take your trace-id and find all logging associated with it
+tends to be your first point of call before you put something in. Diagnosing what went wrong afterwards is also
+pretty much critical.   
+
+NOTE: it is important to remember in Connect, logs are written out in JSON format for direct consumption by fluentd. 
+This makes it must easier to attach structured information.
+
+=== How it works
+
+Given you often wish to trace things you don't want to log and vs versa,
+you must have something in common, and that is in reality the span + trace-id the Open Tracing setup. 
+
+This repository provides two methods of doing that tracing, a servlet filter and a couple of Jersey filters they
+are the mechanism we use in Java for all REST traffic.
+
+The logging is determined by configuration. Unlike Open Tracing, limiting the items that can be logged via a single
+global configuration is (a) easy in Kubernetes and (b) desirable across languages, so we enforce external configuration
+of valid log entries.
+
+The source of log entries are as follows:
+
+- Open Tracing Span + Trace-Id will be added to the log context (https://logback.qos.ch/manual/mdc.html[MDC in slfj4])  
+- Open Tracing _baggage_ is examined and checked against the valid list. If the baggage is of logging interest, it is
+added to the MDC.
+- All remaining items in the valid headers list is compared against the incoming header 
+list and further inserted into the MDC.  e.g. if session-id is in our list, we check for X-Session-Id (in any case). 
+
+When our application is the source of an outgoing request it will examine the list of headers it should send and:
+
+- Check the _baggage_ to see if those items are already going to be sent
+- All items in the MDC that are in the logging configuration will be attached as standard `X-HeaderName` style extension
+headers.  
+
+=== 
+
+=== Further notes
+
+- Typically with our Cucumber tests we have also added in a Session-Id. This would sensibly be baggage as well as 
+  logging context.
+  
+
