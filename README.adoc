@@ -2,13 +2,20 @@
 
 === Context
 
-The CNCF Open Tracing API provides an "API" indicating how _tracing_ should occur in a standard stack. The
-API is literally a description of constructs and is then idiomatically mapped to every language that wishes 
+The http://opentracing.io/[CNCF Open Tracing API] provides an specification indicating how _tracing_ should 
+occur in a standard stack. The specification is literally a description of constructs 
+and is then idiomatically mapped to every language that wishes 
 to support the concepts discussed in the specification.
 
-The core concepts are a trace id (across the entire request from origin until full completion - including database
-and messages dropped into a messaging system), a span (the part of a trace in a single service), tags (categorisation
-of spans) and baggage (extra data along for the ride). Spans typically have parent spans so the whole tree of calls
+The core concepts are a:
+ 
+- *trace id* (across the entire request from origin until full completion - including database
+and messages dropped into a messaging system), 
+- *spans* (the part of a trace in a single service), 
+- *tags* (categorisation of spans) and 
+- *baggage* (extra data along for the ride). 
+
+Spans typically have parent spans so the whole tree of calls
 can be tracked all the way down the line.
 
 Open Tracing can also store "logs" but this capability is somewhat anemic, so we currently don't use it.

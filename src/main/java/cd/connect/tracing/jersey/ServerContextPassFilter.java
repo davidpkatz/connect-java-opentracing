@@ -1,22 +1,16 @@
 package cd.connect.tracing.jersey;
 
 import cd.connect.tracing.HeaderLoggingConfiguration;
-import com.google.common.base.Splitter;
 import org.apache.logging.log4j.ThreadContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import javax.annotation.Priority;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.MultivaluedMap;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 /**
  * Look for a header value called "loggingHeaders" and if it exists, grab all of the values and push them
