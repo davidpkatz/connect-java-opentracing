@@ -34,30 +34,30 @@ more important in the CI/CD lifecycle, being able to take your trace-id and find
 tends to be your first point of call before you put something in. Diagnosing what went wrong afterwards is also
 pretty much critical.   
 
-NOTE: it is important to remember in Connect, logs are written out in JSON format for direct consumption by fluentd. 
-This makes it must easier to attach structured information.
+NOTE: It is important to remember in Connect, logs are written out in JSON format for direct consumption by fluentd. 
+This makes it much easier to attach structured information.
 
 === How it works
 
-Given you often wish to trace things you don't want to log and vs versa,
-you must have something in common, and that is in reality the span + trace-id the Open Tracing setup. 
+Given you often wish to trace things you don't want to log and vice versa,
+you must have something in common, and that is in reality the span + trace-id in the Open Tracing setup. 
 
-This repository provides two methods of doing that tracing, a servlet filter and a couple of Jersey filters they
-are the mechanism we use in Java for all REST traffic.
+This repository provides two methods of doing that tracing, a servlet filter and a couple of Jersey filters that
+form the mechanism we use in Java for all REST traffic.
 
 The logging is determined by configuration. Unlike Open Tracing, limiting the items that can be logged via a single
 global configuration is (a) easy in Kubernetes and (b) desirable across languages, so we enforce external configuration
 of valid log entries.
 
-The source of log entries are as follows:
+The sources of log entries are as follows:
 
 - Open Tracing Span + Trace-Id will be added to the log context (https://logback.qos.ch/manual/mdc.html[MDC in slfj4])  
 - Open Tracing _baggage_ is examined and checked against the valid list. If the baggage is of logging interest, it is
 added to the MDC.
-- All remaining items in the valid headers list is compared against the incoming header 
+- All remaining items in the valid headers list are compared against the incoming header 
 list and further inserted into the MDC.  e.g. if session-id is in our list, we check for X-Session-Id (in any case). 
 
-When our application is the source of an outgoing request it will examine the list of headers it should send and:
+When our application is the source of an outgoing request, it will examine the list of headers it should send and:
 
 - Check the _baggage_ to see if those items are already going to be sent
 - All items in the MDC that are in the logging configuration will be attached as standard `X-HeaderName` style extension
